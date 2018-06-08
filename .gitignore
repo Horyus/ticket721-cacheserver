@@ -1,2 +1,4 @@
 node_modules
 package-lock.json
+compose/mongo_data
+test/mongo_data

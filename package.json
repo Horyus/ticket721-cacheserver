@@ -4,8 +4,9 @@
   "description": "Ticket721 CacheServer",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "dev": "nodemon index.js",
+    "start": "node index.js",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -19,6 +20,25 @@
   "author": "Iulian Rotaru (mortimr)",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.16.3"
+    "bcrypt": "^2.0.1",
+    "body-parser": "^1.18.3",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.16.3",
+    "express-session": "^1.15.6",
+    "mongoose": "^5.1.4",
+    "newman": "^3.9.4",
+    "nodemon": "^1.17.5",
+    "passport": "^0.4.0",
+    "passport-local": "^1.0.0",
+    "rimraf": "^2.6.2",
+    "web3-utils": "^1.0.0-beta.34"
+  },
+  "jest": {
+    "globalSetup": "./test_env/setup.js",
+    "globalTeardown": "./test_env/teardown.js"
+  },
+  "devDependencies": {
+    "docker-compose": "^0.4.3",
+    "jest": "^23.1.0"
   }
 }

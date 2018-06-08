@@ -1,8 +1,37 @@
-const express = require('express');
-const app = express();
+const app_runner = () => {
 
-app.get('/', function (req, res) {
- return res.send('Hello world');
-});
+    const express = require('express');
+    const app = express();
+    const empty = "                                          ";
 
-app.listen(process.env.PORT || 8080);
+    app.use(require('cookie-parser')());
+    app.use(require('body-parser').urlencoded({extended: true}));
+    app.use(require('express-session')({secret: 'U-u why ?', resave: false, saveUninitialized: false}));
+
+    require('./routes/auth')(app);
+
+    app.get('/', (req, res) => {
+        if (!!req.user) {
+            console.log(req.user.username + " :: /");
+            res.send(JSON.stringify({logged: !!req.user, username: req.user.username}))
+        } else {
+            console.log(empty + " :: /");
+            res.send(JSON.stringify({logged: !!req.user}));
+        }
+    });
+
+    return app;
+};
+
+//console.log("\n\n████████╗██╗ ██████╗██╗  ██╗███████╗████████╗███████╗██████╗  ██╗");
+//console.log("╚══██╔══╝██║██╔════╝██║ ██╔╝██╔════╝╚══██╔══╝╚════██║╚════██╗███║");
+//console.log("   ██║   ██║██║     █████╔╝ █████╗     ██║       ██╔╝ █████╔╝╚██║");
+//console.log("   ██║   ██║██║     ██╔═██╗ ██╔══╝     ██║      ██╔╝ ██╔═══╝  ██║");
+//console.log("   ██║   ██║╚██████╗██║  ██╗███████╗   ██║      ██║  ███████╗ ██║");
+//console.log("   ╚═╝   ╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝   ╚═╝      ╚═╝  ╚══════╝ ╚═╝");
+
+if (require.main === module) {
+    app_runner().listen(process.env.PORT || 8080);
+} else {
+    module.exports = app_runner;
+}
