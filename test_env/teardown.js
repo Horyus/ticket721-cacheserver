@@ -8,10 +8,12 @@ module.exports = async () => new Promise(async (ok, ko) => {
     console.log("+--------------------------------------+\n");
     global.app.close();
     await compose.down({cwd: './test', log: true});
-    rimraf('./test/mongo_data', function () {
-        console.log("\n+--------------------------------------+");
-        console.log("| Test Teardown Successful             |");
-        console.log("+--------------------------------------+\n");
-        process.exit(0);
+    rimraf('./test/mongo_data', () => {
+        rimraf('/tmp/ticket721_cacheserver_block', () => {
+            console.log("\n+--------------------------------------+");
+            console.log("| Test Teardown Successful             |");
+            console.log("+--------------------------------------+\n");
+            process.exit(0);
+        });
     });
 });
