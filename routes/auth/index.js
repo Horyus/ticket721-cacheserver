@@ -4,7 +4,6 @@ const Users = require('../../mongoose').User;
 const randomstring = require("randomstring");
 const Web3Utils = require('web3-utils');
 const Ethers = require("ethers");
-const Bcrypt = require("bcrypt");
 const empty = "                                          ";
 
 const auth = (app) => {
