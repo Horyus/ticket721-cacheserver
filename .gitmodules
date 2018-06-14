@@ -1,0 +1,3 @@
+[submodule "test/ticket721-csapi"]
+	path = test/ticket721-csapi
+	url = https://gitlab.com/Horyus/ticket721/ticket721-csapi
