@@ -12,7 +12,7 @@ const app_runner = () => {
 
     app.get('/', (req, res) => {
         if (!!req.user) {
-            console.log(req.user.username + " :: /");
+            console.log(req.user.address + " :: /");
             res.send(JSON.stringify({logged: !!req.user, username: req.user.username}))
         } else {
             console.log(empty + " :: /");

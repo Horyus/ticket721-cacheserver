@@ -13,8 +13,6 @@ services:
       - MONGO_LOG_DIR=/data/log
       - MONGODB_USER="ticket721"
       - MONGODB_PASS="ticket721pass"
-    volumes:
-      - ./mongo_data:/data
     command: mongod --smallfiles
     ports:
       - "127.0.0.1:27017:27017"
@@ -24,7 +22,7 @@ services:
     image: trufflesuite/ganache-cli:latest
     container_name: ticket721_ethereum-rpc
     ports:
-      - 8545:8545
+      - 8550:8545
     networks:
       - ticket721-network
     command: ganache-cli --mnemonic "cross uniform panic climb universe awful surprise list dutch ability label cat"
