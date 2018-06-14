@@ -23,7 +23,12 @@ services:
     container_name: ticket721_api
     volumes:
       - ../index.js:/usr/src/app/index.js
+      - ../passport:/usr/src/app/passport
+      - ../routes:/usr/src/app/routes
+      - ../mongoose:/usr/src/app/mongoose
       - ../package.json:/usr/src/app/package.json
+    environment:
+      - DB_URL=mongodb://ticket721_mongodb/ticket721
     working_dir: /usr/src/app
     ports:
       - 8080:8080
