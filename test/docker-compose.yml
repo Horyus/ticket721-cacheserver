@@ -13,8 +13,6 @@ services:
       - MONGO_LOG_DIR=/data/log
       - MONGODB_USER="ticket721"
       - MONGODB_PASS="ticket721pass"
-    volumes:
-      - ./mongo_data:/data
     command: mongod --smallfiles
     ports:
       - "127.0.0.1:27017:27017"
