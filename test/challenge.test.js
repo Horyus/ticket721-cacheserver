@@ -15,7 +15,9 @@ describe("Testing Challenge", () => {
 
     beforeAll(async (done) => {
         Web3 = new _Web3(new _Web3.providers.HttpProvider("http://localhost:8550"));
+      console.log("OK?");
         coinbase = await Web3.eth.getCoinbase();
+      console.log("OK??");
         api = new T721CSAPI(process.env.API_URL || "http://localhost:8080", coinbase, Web3);
         done();
     });

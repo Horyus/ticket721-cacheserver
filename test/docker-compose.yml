@@ -19,10 +19,10 @@ services:
     networks:
       - ticket721-network
   ethereum-rpc:
-    image: trufflesuite/ganache-cli:latest
+    image: trufflesuite/ganache-cli:v6.1.0
     container_name: ticket721_ethereum-rpc
     ports:
-      - 8550:8545
+      - "127.0.0.1:8550:8550"
     networks:
       - ticket721-network
-    command: ganache-cli --mnemonic "cross uniform panic climb universe awful surprise list dutch ability label cat"
+    command: ganache-cli --mnemonic "cross uniform panic climb universe awful surprise list dutch ability label cat" -p 8550
