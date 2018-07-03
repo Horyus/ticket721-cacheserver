@@ -12,5 +12,5 @@ install:
   - npm install
   - git submodule foreach --recursive npm install
 
-test:
+script:
   - npm test
