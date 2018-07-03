@@ -1,0 +1,16 @@
+env:
+  DOCKER_COMPOSE_VERSION: 1.21.1
+
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install -o Dpkg::Options::="--force-confold" --force-yes -y docker-engine
+  - docker-compose --version
+  - git submodule update --init --recursive
+
+  
+install:
+  - npm install
+  - git submodule foreach --recursive npm install
+
+test:
+  - npm test
