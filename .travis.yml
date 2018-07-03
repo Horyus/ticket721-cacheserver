@@ -7,6 +7,8 @@ before_install:
   - docker-compose --version
   - git submodule update --init --recursive
 
+node_js:
+  - "9"
   
 install:
   - npm install
