@@ -9,6 +9,7 @@
     "test": "jest",
     "simulation:start": "node simulation/start.js",
     "simulation:populate": "./simulation/populate.sh",
+    "simulation:run": "./simulation/run_api.sh",
     "simulation:stop": "node simulation/stop.js"
   },
   "repository": {
@@ -40,7 +41,11 @@
   },
   "jest": {
     "globalSetup": "./test_env/setup.js",
-    "globalTeardown": "./test_env/teardown.js"
+    "globalTeardown": "./test_env/teardown.js",
+    "testPathIgnorePatterns": [
+      "node_modules",
+      "simulation"
+    ]
   },
   "devDependencies": {
     "docker-compose": "^0.4.3",

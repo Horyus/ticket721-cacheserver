@@ -6,6 +6,8 @@ const app_runner = () => {
     console.log("   ██║   ██║██║     ██╔═██╗ ██╔══╝     ██║      ██╔╝ ██╔═══╝  ██║");
     console.log("   ██║   ██║╚██████╗██║  ██╗███████╗   ██║      ██║  ███████╗ ██║");
     console.log("   ╚═╝   ╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝   ╚═╝      ╚═╝  ╚══════╝ ╚═╝");
+    console.log(":: Using Ticket721Hub from " + process.env.T721H_ADDRESS);
+    console.log(":: Using Contract Sources from " + process.env.T721C_DIST_PATH);
 
     const express = require('express');
     const app = express();
