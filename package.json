@@ -6,14 +6,7 @@
   "scripts": {
     "dev": "nodemon index.js",
     "start": "node index.js",
-    "test": "jest",
-    "simulation:start": "node simulation/start.js",
-    "simulation:deploy": "./simulation/deploy.sh",
-    "simulation:populate_one": "./simulation/populate_one.sh",
-    "simulation:populate_two": "./simulation/populate_two.sh",
-    "simulation:import_config": "./simulation/import_config.sh",
-    "simulation:run": "./simulation/run_api.sh",
-    "simulation:stop": "node simulation/stop.js"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
