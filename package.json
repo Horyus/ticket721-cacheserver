@@ -8,7 +8,10 @@
     "start": "node index.js",
     "test": "jest",
     "simulation:start": "node simulation/start.js",
-    "simulation:populate": "./simulation/populate.sh",
+    "simulation:deploy": "./simulation/deploy.sh",
+    "simulation:populate_one": "./simulation/populate_one.sh",
+    "simulation:populate_two": "./simulation/populate_two.sh",
+    "simulation:import_config": "./simulation/import_config.sh",
     "simulation:run": "./simulation/run_api.sh",
     "simulation:stop": "node simulation/stop.js"
   },
@@ -49,6 +52,7 @@
   },
   "devDependencies": {
     "docker-compose": "^0.4.3",
+    "ipfs-api": "^22.2.2",
     "jest": "^23.1.0"
   }
 }
