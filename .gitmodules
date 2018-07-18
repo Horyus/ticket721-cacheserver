@@ -1,6 +1,0 @@
-[submodule "test/ticket721-csapi"]
-	path = test/ticket721-csapi
-	url = https://github.com/Horyus/ticket721-csapi
-[submodule "simulation/ticket721-contracts"]
-	path = simulation/ticket721-contracts
-	url = https://github.com/Horyus/ticket721-contracts
