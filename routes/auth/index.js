@@ -35,6 +35,12 @@ const auth = (app, passport) => {
         next();
     });
 
+    app.get('/check_token', passport.authenticate('jwt', {session: false}), function (req, res, next) {
+        res.status(200);
+        res.json({status: !!req.user});
+        next();
+    });
+
     app.post('/login',  function (req, res, next) {
         if (!req.body || !req.body.address || !req.body.signature) {
             res.status(500);
