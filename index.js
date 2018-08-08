@@ -1,16 +1,17 @@
 var cors = require('cors');
+const signale = require('signale');
 
 const app_runner = () => {
 
-    //console.log("\n\n████████╗██╗ ██████╗██╗  ██╗███████╗████████╗███████╗██████╗  ██╗");
-    //console.log("╚══██╔══╝██║██╔════╝██║ ██╔╝██╔════╝╚══██╔══╝╚════██║╚════██╗███║");
-    //console.log("   ██║   ██║██║     █████╔╝ █████╗     ██║       ██╔╝ █████╔╝╚██║");
-    //console.log("   ██║   ██║██║     ██╔═██╗ ██╔══╝     ██║      ██╔╝ ██╔═══╝  ██║");
-    //console.log("   ██║   ██║╚██████╗██║  ██╗███████╗   ██║      ██║  ███████╗ ██║");
-    //console.log("   ╚═╝   ╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝   ╚═╝      ╚═╝  ╚══════╝ ╚═╝");
-    console.log(":: Using Ticket721Hub from " + process.env.T721H_ADDRESS);
-    console.log(":: Using Contract Sources from " + process.env.T721C_DIST_PATH);
-    console.log(":: Master Address is " + process.env.T721_MASTER_ADDRESS);
+    //signale.info("\n\n████████╗██╗ ██████╗██╗  ██╗███████╗████████╗███████╗██████╗  ██╗");
+    //signale.info("╚══██╔══╝██║██╔════╝██║ ██╔╝██╔════╝╚══██╔══╝╚════██║╚════██╗███║");
+    //signale.info("   ██║   ██║██║     █████╔╝ █████╗     ██║       ██╔╝ █████╔╝╚██║");
+    //signale.info("   ██║   ██║██║     ██╔═██╗ ██╔══╝     ██║      ██╔╝ ██╔═══╝  ██║");
+    //signale.info("   ██║   ██║╚██████╗██║  ██╗███████╗   ██║      ██║  ███████╗ ██║");
+    //signale.info("   ╚═╝   ╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝   ╚═╝      ╚═╝  ╚══════╝ ╚═╝");
+    signale.info("Using Ticket721Hub from " + process.env.T721H_ADDRESS);
+    signale.info("Using Contract Sources from " + process.env.T721C_DIST_PATH);
+    signale.info("Master Address is " + process.env.T721_MASTER_ADDRESS);
 
     const express = require('express');
     const passport = require('passport');
@@ -41,7 +42,22 @@ const app_runner = () => {
     });
 
     function log(req, res, next){
-        console.log((req.user ? req.user.address : empty) + " :: [" + res.statusCode + "] " + req.url);
+        const options = {
+            types: {
+                info: {
+                    label: (req.user ? req.user.address : empty)
+                },
+                error: {
+                    label: (req.user ? req.user.address : empty)
+                }
+            }
+        };
+        const custom = new signale.Signale(options);
+        if (res.statusCode >= 200 && res.statusCode <= 399) {
+            custom.info(req.url);
+        } else {
+            custom.error(req.url);
+        }
         next();
     }
 

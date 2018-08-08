@@ -1,6 +1,7 @@
 const Web3 = require("web3");
 const empty = "                                          ";
-
+const _signale = require("signale");
+const signale = new _signale.Signale();
 const web3 = new Web3(new Web3.providers.WebsocketProvider("ws://localhost:8545"));
 const Ticket721HubArtifact = require(process.env.T721C_DIST_PATH + "/contracts/Ticket721Hub");
 const Ticket721Artifact = require(process.env.T721C_DIST_PATH + "/contracts/Ticket721");
@@ -38,7 +39,7 @@ async function get_creation_block() {
 
         return height;
     } catch (e) {
-        console.error(e);
+        signale.error(e);
     }
 }
 
@@ -53,7 +54,7 @@ async function get_addresses() {
 
 
     } catch (e) {
-        console.error(":: Unable to recover ticket registries addresses");
+        signale.error("Unable to recover ticket registries addresses");
     }
 
 }
@@ -61,14 +62,36 @@ async function get_addresses() {
 async function load_contracts(verified_ticket_registry_address, public_ticket_registry_address, verified_accounts_registry_address) {
     try {
         Ticket721 = new web3.eth.Contract(Ticket721Artifact.abiDefinition, public_ticket_registry_address);
-        console.log(":: Loaded Public Ticket Registry at " + public_ticket_registry_address);
+        signale.info("Loaded Public Ticket Registry at " + public_ticket_registry_address);
         Ticket721Verified = new web3.eth.Contract(Ticket721Artifact.abiDefinition, verified_ticket_registry_address);
-        console.log(":: Loaded Verified Ticket Registry at " + verified_ticket_registry_address);
+        signale.info("Loaded Verified Ticket Registry at " + verified_ticket_registry_address);
         Ticket721VerifiedAccounts = new web3.eth.Contract(Ticket721VerifiedAccountsArtifact.abiDefinition, verified_accounts_registry_address);
-        console.log(":: Loaded Verified Account Registry at " + verified_accounts_registry_address);
+        signale.info("Loaded Verified Account Registry at " + verified_accounts_registry_address);
     } catch (e) {
-        console.error(":: Unable to recover ticket registries");
+        signale.error("Unable to recover ticket registries");
     }
+}
+
+async function synchronize_eventmint(infos) {
+    const EventMint = global.mongoose.EventMint;
+    const highest = await EventMint.find({}, ['block'], {
+        limit: 1,
+        sort: {
+            block: -1,
+        }
+    });
+    const start = highest.length ? highest[0].block + 1 : infos.block_number;
+    signale.info("Fetching Event Mint from block " + start);
+    Ticket721.events.Mint({fromBlock: start}, async (err, event) => {
+        const insert = new EventMint({
+            block: event.blockNumber,
+            hash: event.transactionHash,
+            owner: event.returnValues['0'],
+            emitter: event.returnValues['1']
+        });
+        await insert.save();
+        signale.info("Mint [ " + event.transactionHash + " ]");
+    });
 }
 
 async function synchronize_eventsale(infos) {
@@ -80,7 +103,7 @@ async function synchronize_eventsale(infos) {
         }
     });
     const start = highest.length ? highest[0].block + 1 : infos.block_number;
-    console.log(":: Fetching Event Sale from block " + start);
+    signale.info("Fetching Event Sale from block " + start);
     Ticket721.events.Sale({fromBlock: start}, async (err, event) => {
         const insert = new EventSale({
             block: event.blockNumber,
@@ -89,7 +112,7 @@ async function synchronize_eventsale(infos) {
             id: event.returnValues['1']
         });
         await insert.save();
-        console.log(":: Sale [ " + event.transactionHash + " ]");
+        signale.info("Sale [ " + event.transactionHash + " ]");
     });
 }
 
@@ -102,7 +125,7 @@ async function synchronize_eventbuy(infos) {
         }
     });
     const start = highest.length ? highest[0].block + 1 : infos.block_number;
-    console.log(":: Fetching Event Buy from block " + start);
+    signale.info("Fetching Event Buy from block " + start);
     Ticket721.events.Buy({fromBlock: start}, async (err, event) => {
         const insert = new EventBuy({
             block: event.blockNumber,
@@ -111,7 +134,7 @@ async function synchronize_eventbuy(infos) {
             id: event.returnValues['1']
         });
         await insert.save();
-        console.log(":: Buy [ " + event.transactionHash + " ]");
+        signale.info("Buy [ " + event.transactionHash + " ]");
     });
 }
 
@@ -124,7 +147,7 @@ async function synchronize_eventregister(infos) {
         }
     });
     const start = highest.length ? highest[0].block + 1 : infos.block_number;
-    console.log(":: Fetching Event Register from block " + start);
+    signale.info("Fetching Event Register from block " + start);
     Ticket721.events.Register({fromBlock: start}, async (err, event) => {
         const insert = new EventRegister({
             block: event.blockNumber,
@@ -132,7 +155,7 @@ async function synchronize_eventregister(infos) {
             controller: event.returnValues['0']
         });
         await insert.save();
-        console.log(":: Register [ " + event.transactionHash + " ]");
+        signale.info("Register [ " + event.transactionHash + " ]");
     });
 }
 
@@ -145,7 +168,7 @@ async function synchronize_eventtransfer(infos) {
         }
     });
     const start = highest.length ? highest[0].block + 1 : infos.block_number;
-    console.log(":: Fetching Event Transfer from block " + start);
+    signale.info("Fetching Event Transfer from block " + start);
     Ticket721.events.Transfer({fromBlock: start}, async (err, event) => {
         const insert = new EventTransfer({
             block: event.blockNumber,
@@ -155,7 +178,7 @@ async function synchronize_eventtransfer(infos) {
             id: event.returnValues['2']
         });
         await insert.save();
-        console.log(":: Transfer [ " + event.transactionHash + " ]");
+        signale.info("Transfer [ " + event.transactionHash + " ]");
     });
 }
 
@@ -168,7 +191,7 @@ async function synchronize_eventapproval(infos) {
         }
     });
     const start = highest.length ? highest[0].block + 1 : infos.block_number;
-    console.log(":: Fetching Event Approval from block " + start);
+    signale.info("Fetching Event Approval from block " + start);
     Ticket721.events.Approval({fromBlock: start}, async (err, event) => {
         const insert = new EventApproval({
             block: event.blockNumber,
@@ -178,7 +201,7 @@ async function synchronize_eventapproval(infos) {
             id: event.returnValues['2']
         });
         await insert.save();
-        console.log(":: Approval [ " + event.transactionHash + " ]");
+        signale.info("Approval [ " + event.transactionHash + " ]");
     });
 }
 
@@ -191,7 +214,7 @@ async function synchronize_eventapprovalforall(infos) {
         }
     });
     const start = highest.length ? highest[0].block + 1 : infos.block_number;
-    console.log(":: Fetching Event ApprovalForAll from block " + start);
+    signale.info("Fetching Event ApprovalForAll from block " + start);
     Ticket721.events.ApprovalForAll({fromBlock: start}, async (err, event) => {
         const insert = new EventApprovalForAll({
             block: event.blockNumber,
@@ -201,7 +224,29 @@ async function synchronize_eventapprovalforall(infos) {
             approved: event.returnValues['2']
         });
         await insert.save();
-        console.log(":: ApprovalForAll [ " + event.transactionHash + " ]");
+        signale.info("ApprovalForAll [ " + event.transactionHash + " ]");
+    });
+}
+
+async function synchronize_eventmintverified(infos) {
+    const EventMintVerified = global.mongoose.EventMintVerified;
+    const highest = await EventMintVerified.find({}, ['block'], {
+        limit: 1,
+        sort: {
+            block: -1,
+        }
+    });
+    const start = highest.length ? highest[0].block + 1 : infos.block_number;
+    signale.info("Fetching Event Mint (Verified) from block " + start);
+    Ticket721Verified.events.Mint({fromBlock: start}, async (err, event) => {
+        const insert = new EventMintVerified({
+            block: event.blockNumber,
+            hash: event.transactionHash,
+            owner: event.returnValues['0'],
+            emitter: event.returnValues['1']
+        });
+        await insert.save();
+        signale.info("Mint (Verified) [ " + event.transactionHash + " ]");
     });
 }
 
@@ -214,7 +259,7 @@ async function synchronize_eventsaleverified(infos) {
         }
     });
     const start = highest.length ? highest[0].block + 1 : infos.block_number;
-    console.log(":: Fetching Event Sale (Verified) from block " + start);
+    signale.info("Fetching Event Sale (Verified) from block " + start);
     Ticket721Verified.events.Sale({fromBlock: start}, async (err, event) => {
         const insert = new EventSaleVerified({
             block: event.blockNumber,
@@ -223,7 +268,7 @@ async function synchronize_eventsaleverified(infos) {
             id: event.returnValues['1']
         });
         await insert.save();
-        console.log(":: Sale (Verified) [ " + event.transactionHash + " ]");
+        signale.info("Sale (Verified) [ " + event.transactionHash + " ]");
     });
 }
 
@@ -236,7 +281,7 @@ async function synchronize_eventbuyverified(infos) {
         }
     });
     const start = highest.length ? highest[0].block + 1 : infos.block_number;
-    console.log(":: Fetching Event Buy (Verified) from block " + start);
+    signale.info("Fetching Event Buy (Verified) from block " + start);
     Ticket721Verified.events.Buy({fromBlock: start}, async (err, event) => {
         const insert = new EventBuyVerified({
             block: event.blockNumber,
@@ -245,7 +290,7 @@ async function synchronize_eventbuyverified(infos) {
             id: event.returnValues['1']
         });
         await insert.save();
-        console.log(":: Buy (Verified) [ " + event.transactionHash + " ]");
+        signale.info("Buy (Verified) [ " + event.transactionHash + " ]");
     });
 }
 
@@ -258,7 +303,7 @@ async function synchronize_eventregisterverified(infos) {
         }
     });
     const start = highest.length ? highest[0].block + 1 : infos.block_number;
-    console.log(":: Fetching Event Register (Verified) from block " + start);
+    signale.info("Fetching Event Register (Verified) from block " + start);
     Ticket721Verified.events.Register({fromBlock: start}, async (err, event) => {
         const insert = new EventRegisterVerified({
             block: event.blockNumber,
@@ -266,7 +311,7 @@ async function synchronize_eventregisterverified(infos) {
             controller: event.returnValues['0']
         });
         await insert.save();
-        console.log(":: Register (Verified) [ " + event.transactionHash + " ]");
+        signale.info("Register (Verified) [ " + event.transactionHash + " ]");
     });
 }
 
@@ -279,7 +324,7 @@ async function synchronize_eventtransferverified(infos) {
         }
     });
     const start = highest.length ? highest[0].block + 1 : infos.block_number;
-    console.log(":: Fetching Event Transfer (Verified) from block " + start);
+    signale.info("Fetching Event Transfer (Verified) from block " + start);
     Ticket721Verified.events.Transfer({fromBlock: start}, async (err, event) => {
         const insert = new EventTransferVerified({
             block: event.blockNumber,
@@ -289,7 +334,7 @@ async function synchronize_eventtransferverified(infos) {
             id: event.returnValues['2']
         });
         await insert.save();
-        console.log(":: Transfer (Verified) [ " + event.transactionHash + " ]");
+        signale.info("Transfer (Verified) [ " + event.transactionHash + " ]");
     });
 }
 
@@ -302,7 +347,7 @@ async function synchronize_eventapprovalverified(infos) {
         }
     });
     const start = highest.length ? highest[0].block + 1 : infos.block_number;
-    console.log(":: Fetching Event Approval (Verified) from block " + start);
+    signale.info("Fetching Event Approval (Verified) from block " + start);
     Ticket721Verified.events.Approval({fromBlock: start}, async (err, event) => {
         const insert = new EventApprovalVerified({
             block: event.blockNumber,
@@ -312,7 +357,7 @@ async function synchronize_eventapprovalverified(infos) {
             id: event.returnValues['2']
         });
         await insert.save();
-        console.log(":: Approval (Verified) [ " + event.transactionHash + " ]");
+        signale.info("Approval (Verified) [ " + event.transactionHash + " ]");
     });
 }
 
@@ -325,7 +370,7 @@ async function synchronize_eventapprovalforallverified(infos) {
         }
     });
     const start = highest.length ? highest[0].block + 1 : infos.block_number;
-    console.log(":: Fetching Event ApprovalForAll (Verified) from block " + start);
+    signale.info("Fetching Event ApprovalForAll (Verified) from block " + start);
     Ticket721Verified.events.ApprovalForAll({fromBlock: start}, async (err, event) => {
         const insert = new EventApprovalForAllVerified({
             block: event.blockNumber,
@@ -335,7 +380,7 @@ async function synchronize_eventapprovalforallverified(infos) {
             approved: event.returnValues['2']
         });
         await insert.save();
-        console.log(":: ApprovalForAll (Verified) [ " + event.transactionHash + " ]");
+        signale.info("ApprovalForAll (Verified) [ " + event.transactionHash + " ]");
     });
 }
 
@@ -349,7 +394,7 @@ async function synchronize_hubsale(infos) {
         }
     });
     const start = highest.length ? highest[0].block + 1 : infos.block_number;
-    console.log(":: Fetching Event Creation from block " + start);
+    signale.info("Fetching Event Creation from block " + start);
     Ticket721Hub.events.Sale({fromBlock: start}, async (err, event) => {
         const insert = new EventCreation({
             block: event.blockNumber,
@@ -359,7 +404,7 @@ async function synchronize_hubsale(infos) {
         });
         await insert.save();
         fetch_event_infos(event.returnValues['0'], event.returnValues['1']);
-        console.log(":: Event Creation [ " + event.transactionHash + " ]");
+        signale.info("Event Creation [ " + event.transactionHash + " ]");
     });
 }
 
@@ -382,69 +427,7 @@ async function fetch_event_infos(address, owner) {
     });
 
     await event.save();
-    console.log(":: Registered " + (event.verified ? "Verified " : "") + "Event : " + event.name + " at " + address);
-}
-
-
-async function get_nft_ids(address) {
-    const amount = await Ticket721.methods.balanceOf(address).call();
-    const wallet = [];
-    for (let idx = 0; idx < amount; ++idx) {
-        wallet.push(parseInt(await Ticket721.methods.tokenOfOwnerByIndex(address, idx).call()));
-    }
-    return wallet;
-}
-
-async function get_verified_nft_ids(address) {
-    const amount = await Ticket721Verified.methods.balanceOf(address).call();
-    const wallet = [];
-    for (let idx = 0; idx < amount; ++idx) {
-        wallet.push(parseInt(await Ticket721Verified.methods.tokenOfOwnerByIndex(address, idx).call()));
-    }
-    return wallet;
-}
-
-const User = global.mongoose.User;
-
-async function refresh_wallets(req, res, next) {
-    try {
-        if (!req.user) {
-            res.status(500);
-            res.send(JSON.stringify({
-                error: 'Not logged in'
-            }));
-            return next();
-        }
-        const address = web3.utils.toChecksumAddress(req.user.address);
-        User.findOne({address: address}, async (_err, _result) => {
-            if (_err) {
-                res.status(500);
-                res.send(JSON.stringify({
-                    error: "Internal Error"
-                }));
-                return next();
-            }
-            if (!_result) {
-                res.status(500);
-                res.send(JSON.stringify({
-                    error: "Account not registered"
-                }));
-                return next();
-            }
-            const public_wallet = await get_nft_ids(address);
-            const verified_wallet = await get_verified_nft_ids(address);
-            _result.public_wallet = public_wallet;
-            _result.verified_wallet = verified_wallet;
-            await _result.save();
-            res.redirect("/");
-        })
-    } catch (e) {
-        res.status(500);
-        res.send(JSON.stringify({
-            error: "Internal Error"
-        }));
-        next();
-    }
+    signale.info("Registered " + (event.verified ? "Verified " : "") + "Event : " + event.name + " at " + address);
 }
 
 const EventListing = global.mongoose.EventListing;
@@ -484,7 +467,7 @@ async function eth_link(app, passport) {
     const res = await binfos.find({hub_address: hub_address});
     let infos;
     if (!res.length) {
-        console.log(":: No Blockchain informations found");
+        signale.info("No Blockchain informations found");
         const addresses = await get_addresses();
 
         await load_contracts(addresses[0], addresses[1], addresses[2]);
@@ -506,19 +489,21 @@ async function eth_link(app, passport) {
             block_number
         };
         await Infos.save();
-        console.log(":: Saved Blockchain informations");
+        signale.info("Saved Blockchain informations");
     } else {
         infos = res[0];
         await load_contracts(infos.verified_registry_address, infos.public_registry_address, infos.verified_account_registry_address);
-        console.log(":: Blockchain informations found");
+        signale.info("Blockchain informations found");
     }
 
+    synchronize_eventmintverified(infos);
     synchronize_eventsaleverified(infos);
     synchronize_eventbuyverified(infos);
     synchronize_eventregisterverified(infos);
     synchronize_eventtransferverified(infos);
     synchronize_eventapprovalverified(infos);
     synchronize_eventapprovalforallverified(infos);
+    synchronize_eventmint(infos);
     synchronize_eventsale(infos);
     synchronize_eventbuy(infos);
     synchronize_eventregister(infos);
@@ -527,7 +512,6 @@ async function eth_link(app, passport) {
     synchronize_eventapprovalforall(infos);
     synchronize_hubsale(infos);
 
-    app.get('/refresh_wallets', passport.authenticate('jwt', {session: false}), refresh_wallets);
     app.get('/get_events', get_events);
 }
 

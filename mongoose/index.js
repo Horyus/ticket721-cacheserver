@@ -15,9 +15,7 @@ if (!global.mongoose) {
                     return (Web3Utils.isAddress(v) && Web3Utils.checkAddressChecksum(v));
                 }
             }
-        },
-        verified_wallet: [Number],
-        public_wallet: [Number]
+        }
     });
 
     const _BlockchainInfos = new Schema({
@@ -56,6 +54,28 @@ if (!global.mongoose) {
         block_number: {
             type: Number
         }
+    });
+
+    const _EventMint = new Schema({
+        block: Number,
+        hash: String,
+        owner: {
+            type: String,
+            validate: {
+                validator: (v) => {
+                    return (Web3Utils.isAddress(v) && Web3Utils.checkAddressChecksum(v));
+                }
+            }
+        },
+        emitter: {
+            type: String,
+            validate: {
+                validator: (v) => {
+                    return (Web3Utils.isAddress(v) && Web3Utils.checkAddressChecksum(v));
+                }
+            }
+        },
+        id: Number
     });
 
     const _EventSale = new Schema({
@@ -164,6 +184,29 @@ if (!global.mongoose) {
         },
         approved: Boolean
     });
+
+    const _EventMintVerified = new Schema({
+        block: Number,
+        hash: String,
+        owner: {
+            type: String,
+            validate: {
+                validator: (v) => {
+                    return (Web3Utils.isAddress(v) && Web3Utils.checkAddressChecksum(v));
+                }
+            }
+        },
+        emitter: {
+            type: String,
+            validate: {
+                validator: (v) => {
+                    return (Web3Utils.isAddress(v) && Web3Utils.checkAddressChecksum(v));
+                }
+            }
+        },
+        id: Number
+    });
+
     const _EventSaleVerified = new Schema({
         block: Number,
         hash: String,
@@ -314,7 +357,8 @@ if (!global.mongoose) {
 
     const User = conn.model('User', _User);
     const BlockchainInfos = conn.model('BlockchainInfos', _BlockchainInfos);
-    
+
+    const EventMint = conn.model('EventMint', _EventMint);
     const EventSale = conn.model('EventSale', _EventSale);
     const EventBuy = conn.model('EventBuy', _EventBuy);
     const EventRegister = conn.model('EventRegister', _EventRegister);
@@ -322,6 +366,7 @@ if (!global.mongoose) {
     const EventApproval = conn.model('EventApproval', _EventApproval);
     const EventApprovalForAll = conn.model('EventApprovalForAll', _EventApprovalForAll);
 
+    const EventMintVerified = conn.model('EventMintVerified', _EventMintVerified);
     const EventSaleVerified = conn.model('EventSaleVerified', _EventSaleVerified);
     const EventBuyVerified = conn.model('EventBuyVerified', _EventBuyVerified);
     const EventRegisterVerified = conn.model('EventRegisterVerified', _EventRegisterVerified);
@@ -335,12 +380,14 @@ if (!global.mongoose) {
     global.mongoose = {};
     global.mongoose.User = User;
     global.mongoose.BlockchainInfos = BlockchainInfos;
+    global.mongoose.EventMint = EventMint;
     global.mongoose.EventSale = EventSale;
     global.mongoose.EventBuy = EventBuy;
     global.mongoose.EventRegister = EventRegister;
     global.mongoose.EventTransfer = EventTransfer;
     global.mongoose.EventApproval = EventApproval;
     global.mongoose.EventApprovalForAll = EventApprovalForAll;
+    global.mongoose.EventMintVerified = EventMintVerified;
     global.mongoose.EventSaleVerified = EventSaleVerified;
     global.mongoose.EventBuyVerified = EventBuyVerified;
     global.mongoose.EventRegisterVerified = EventRegisterVerified;
