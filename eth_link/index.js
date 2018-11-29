@@ -73,7 +73,7 @@ async function load_contracts(verified_ticket_registry_address, public_ticket_re
 }
 
 async function synchronize_eventmint(infos) {
-    const EventMint = global.mongoose.EventMint;
+    const {EventMint, TicketLife} = global.mongoose;
     const highest = await EventMint.find({}, ['block'], {
         limit: 1,
         sort: {
@@ -86,16 +86,28 @@ async function synchronize_eventmint(infos) {
         const insert = new EventMint({
             block: event.blockNumber,
             hash: event.transactionHash,
+            id: event.returnValues['2'],
             owner: event.returnValues['0'],
             emitter: event.returnValues['1']
         });
         await insert.save();
         signale.info("Mint [ " + event.transactionHash + " ]");
+        const create = new TicketLife({
+            id: event.returnValues['2'],
+            sold: false,
+            history: [{
+                action: 'Mint',
+                block: event.blockNumber,
+                owner: event.returnValues['0']
+            }]
+        });
+        await create.save();
+        signale.info("Created Ticket History instance for Ticket #" + event.returnValues['2']);
     });
 }
 
 async function synchronize_eventsale(infos) {
-    const EventSale = global.mongoose.EventSale;
+    const {EventSale, TicketLife} = global.mongoose;
     const highest = await EventSale.find({}, ['block'], {
         limit: 1,
         sort: {
@@ -113,11 +125,49 @@ async function synchronize_eventsale(infos) {
         });
         await insert.save();
         signale.info("Sale [ " + event.transactionHash + " ]");
+        const ticket_life = (await TicketLife.find({id: event.returnValues['1']}))[0];
+        ticket_life.history.push({
+            action: 'Sale',
+            block: event.blockNumber,
+            owner: event.returnValues['0']
+        });
+        ticket_life.sold = true;
+        await ticket_life.save()
+    });
+}
+
+async function synchronize_eventclosesale(infos) {
+    const {EventCloseSale, TicketLife} = global.mongoose;
+    const highest = await EventCloseSale.find({}, ['block'], {
+        limit: 1,
+        sort: {
+            block: -1,
+        }
+    });
+    const start = highest.length ? highest[0].block + 1 : infos.block_number;
+    signale.info("Fetching Event CloseSale from block " + start);
+    Ticket721.events.CloseSale({fromBlock: start}, async (err, event) => {
+        const insert = new EventCloseSale({
+            block: event.blockNumber,
+            hash: event.transactionHash,
+            owner: event.returnValues['0'],
+            id: event.returnValues['1']
+        });
+        await insert.save();
+        signale.info("CloseSale [ " + event.transactionHash + " ]");
+        const ticket_life = (await TicketLife.find({id: event.returnValues['1']}))[0];
+        ticket_life.history.push({
+            action: 'CloseSale',
+            block: event.blockNumber,
+            owner: event.returnValues['0']
+        });
+        ticket_life.sold = false;
+        await ticket_life.save()
     });
 }
 
 async function synchronize_eventbuy(infos) {
-    const EventBuy = global.mongoose.EventBuy;
+    const {EventBuy, TicketLife} = global.mongoose;
     const highest = await EventBuy.find({}, ['block'], {
         limit: 1,
         sort: {
@@ -135,6 +185,14 @@ async function synchronize_eventbuy(infos) {
         });
         await insert.save();
         signale.info("Buy [ " + event.transactionHash + " ]");
+        const ticket_life = (await TicketLife.find({id: event.returnValues['1']}))[0];
+        ticket_life.history.push({
+            action: 'Buy',
+            block: event.blockNumber,
+            owner: event.returnValues['0']
+        });
+        ticket_life.sold = false;
+        await ticket_life.save()
     });
 }
 
@@ -229,7 +287,7 @@ async function synchronize_eventapprovalforall(infos) {
 }
 
 async function synchronize_eventmintverified(infos) {
-    const EventMintVerified = global.mongoose.EventMintVerified;
+    const {EventMintVerified, VerifiedTicketLife} = global.mongoose;
     const highest = await EventMintVerified.find({}, ['block'], {
         limit: 1,
         sort: {
@@ -242,16 +300,28 @@ async function synchronize_eventmintverified(infos) {
         const insert = new EventMintVerified({
             block: event.blockNumber,
             hash: event.transactionHash,
+            id: event.returnValues['2'],
             owner: event.returnValues['0'],
             emitter: event.returnValues['1']
         });
         await insert.save();
         signale.info("Mint (Verified) [ " + event.transactionHash + " ]");
+        const create = new VerifiedTicketLife({
+            id: event.returnValues['2'],
+            sold: false,
+            history: [{
+                action: 'Mint',
+                block: event.blockNumber,
+                owner: event.returnValues['0']
+            }]
+        });
+        await create.save();
+        signale.info("Created Ticket History instance for Verified Ticket #" + event.returnValues['2']);
     });
 }
 
 async function synchronize_eventsaleverified(infos) {
-    const EventSaleVerified = global.mongoose.EventSaleVerified;
+    const {EventSaleVerified, VerifiedTicketLife} = global.mongoose;
     const highest = await EventSaleVerified.find({}, ['block'], {
         limit: 1,
         sort: {
@@ -269,11 +339,49 @@ async function synchronize_eventsaleverified(infos) {
         });
         await insert.save();
         signale.info("Sale (Verified) [ " + event.transactionHash + " ]");
+        const ticket_life = (await VerifiedTicketLife.find({id: event.returnValues['1']}))[0];
+        ticket_life.history.push({
+            action: 'Sale',
+            block: event.blockNumber,
+            owner: event.returnValues['0']
+        });
+        ticket_life.sold = true;
+        await ticket_life.save()
+    });
+}
+
+async function synchronize_eventclosesaleverified(infos) {
+    const {EventCloseSaleVerified, VerifiedTicketLife} = global.mongoose;
+    const highest = await EventCloseSaleVerified.find({}, ['block'], {
+        limit: 1,
+        sort: {
+            block: -1,
+        }
+    });
+    const start = highest.length ? highest[0].block + 1 : infos.block_number;
+    signale.info("Fetching Event CloseSale (Verified) from block " + start);
+    Ticket721Verified.events.CloseSale({fromBlock: start}, async (err, event) => {
+        const insert = new EventCloseSaleVerified({
+            block: event.blockNumber,
+            hash: event.transactionHash,
+            owner: event.returnValues['0'],
+            id: event.returnValues['1']
+        });
+        await insert.save();
+        signale.info("CloseSale (Verified) [ " + event.transactionHash + " ]");
+        const ticket_life = (await VerifiedTicketLife.find({id: event.returnValues['1']}))[0];
+        ticket_life.history.push({
+            action: 'CloseSale',
+            block: event.blockNumber,
+            owner: event.returnValues['0']
+        });
+        ticket_life.sold = false;
+        await ticket_life.save()
     });
 }
 
 async function synchronize_eventbuyverified(infos) {
-    const EventBuyVerified = global.mongoose.EventBuyVerified;
+    const {EventBuyVerified, VerifiedTicketLife} = global.mongoose;
     const highest = await EventBuyVerified.find({}, ['block'], {
         limit: 1,
         sort: {
@@ -291,6 +399,14 @@ async function synchronize_eventbuyverified(infos) {
         });
         await insert.save();
         signale.info("Buy (Verified) [ " + event.transactionHash + " ]");
+        const ticket_life = (await VerifiedTicketLife.find({id: event.returnValues['1']}))[0];
+        ticket_life.history.push({
+            action: 'Buy',
+            block: event.blockNumber,
+            owner: event.returnValues['0']
+        });
+        ticket_life.sold = false;
+        await ticket_life.save()
     });
 }
 
@@ -386,7 +502,6 @@ async function synchronize_eventapprovalforallverified(infos) {
 
 async function synchronize_hubsale(infos) {
     const EventCreation = global.mongoose.EventCreation;
-    await EventCreation.remove({});
     const highest = await EventCreation.find({}, ['block'], {
         limit: 1,
         sort: {
@@ -410,7 +525,6 @@ async function synchronize_hubsale(infos) {
 
 async function fetch_event_infos(address, owner) {
     const EventListing = global.mongoose.EventListing;
-    await EventListing.remove({});
 
     const instance = new web3.eth.Contract(Ticket721ControllerArtifact.abiDefinition, address);
 
@@ -460,6 +574,94 @@ async function get_events(req, res, next) {
     }
 }
 
+async function get_ticket_history(req, res, next) {
+    try {
+        if (!req.body.verified || !req.body.id) {
+            res.status(500);
+            res.send(JSON.stringify({
+                error: "Invalid arguments"
+            }));
+            return next();
+        }
+
+        let history;
+        if (req.body.verified === 'true') {
+            history = await mongoose.VerifiedTicketLife.find({id: parseInt(req.body.id)});
+        } else {
+            history = await mongoose.TicketLife.find({id: parseInt(req.body.id)});
+        }
+
+        if (!history.length) {
+            res.status(500);
+            res.send(JSON.stringify({
+                error: "No entry for ticket"
+            }));
+            return next();
+        }
+        res.status(200);
+        res.send(JSON.stringify({
+            history: history[0].history.map((e) => {
+                return ({
+                    action: e.action,
+                    block: e.block,
+                    owner: e.owner
+                });
+            })
+        }));
+        return next();
+    } catch (e) {
+        res.status(500);
+        res.send(JSON.stringify({
+            error: "Internal Error"
+        }));
+        signale.fatal(e);
+        next();
+    }
+}
+
+async function get_sold_tickets(req, res, next) {
+    try {
+        if (!req.body.verified) {
+            res.status(500);
+            res.send(JSON.stringify({
+                error: "Invalid arguments"
+            }));
+            return next();
+        }
+
+        let history;
+        if (req.body.verified === 'true') {
+            history = await mongoose.VerifiedTicketLife.find({sold: true});
+        } else {
+            history = await mongoose.TicketLife.find({sold: true});
+        }
+
+        if (!history.length) {
+            res.status(500);
+            res.send(JSON.stringify({
+                error: "No entry for ticket"
+            }));
+            return next();
+        }
+        res.status(200);
+        res.send(JSON.stringify({
+            history: history.map((e) => {
+                return (e.id);
+            })
+        }));
+        return next();
+    } catch (e) {
+        res.status(500);
+        res.send(JSON.stringify({
+            error: "Internal Error"
+        }));
+        signale.fatal(e);
+        next();
+    }
+}
+
+
+
 async function eth_link(app, passport) {
 
     const hub_address = web3.utils.toChecksumAddress(process.env.T721H_ADDRESS);
@@ -499,12 +701,14 @@ async function eth_link(app, passport) {
     synchronize_eventmintverified(infos);
     synchronize_eventsaleverified(infos);
     synchronize_eventbuyverified(infos);
+    synchronize_eventclosesaleverified(infos);
     synchronize_eventregisterverified(infos);
     synchronize_eventtransferverified(infos);
     synchronize_eventapprovalverified(infos);
     synchronize_eventapprovalforallverified(infos);
     synchronize_eventmint(infos);
     synchronize_eventsale(infos);
+    synchronize_eventclosesale(infos);
     synchronize_eventbuy(infos);
     synchronize_eventregister(infos);
     synchronize_eventtransfer(infos);
@@ -513,6 +717,8 @@ async function eth_link(app, passport) {
     synchronize_hubsale(infos);
 
     app.get('/get_events', get_events);
+    app.post('/get_history', get_ticket_history);
+    app.post('/get_sold_tickets', get_sold_tickets);
 }
 
 module.exports = eth_link;

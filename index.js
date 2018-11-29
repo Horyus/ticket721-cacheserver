@@ -28,11 +28,12 @@ const app_runner = () => {
 
     require('./routes/auth')(app, passport);
     require('./eth_link')(app, passport);
+    require('./routes/link_code')(app, passport);
 
     app.get('/', passport.authenticate('jwt', {session: false}), (req, res, next) => {
         if (!!req.user) {
             res.status(200);
-            res.send(JSON.stringify({logged: !!req.user, username: req.user.username, public_wallet: req.user.public_wallet, verified_wallet: req.user.verified_wallet}))
+            res.send(JSON.stringify({logged: !!req.user, username: req.user.username, public_wallet: req.user.public_wallet, verified_wallet: req.user.verified_wallet}));
             next();
         } else {
             res.status(200);

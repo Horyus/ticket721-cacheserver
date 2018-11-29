@@ -92,6 +92,20 @@ if (!global.mongoose) {
         id: Number
     });
 
+    const _EventCloseSale = new Schema({
+        block: Number,
+        hash: String,
+        owner: {
+            type: String,
+            validate: {
+                validator: (v) => {
+                    return (Web3Utils.isAddress(v) && Web3Utils.checkAddressChecksum(v));
+                }
+            }
+        },
+        id: Number
+    });
+
     const _EventBuy = new Schema({
         block: Number,
         hash: String,
@@ -208,6 +222,20 @@ if (!global.mongoose) {
     });
 
     const _EventSaleVerified = new Schema({
+        block: Number,
+        hash: String,
+        owner: {
+            type: String,
+            validate: {
+                validator: (v) => {
+                    return (Web3Utils.isAddress(v) && Web3Utils.checkAddressChecksum(v));
+                }
+            }
+        },
+        id: Number
+    });
+
+    const _EventCloseSaleVerified = new Schema({
         block: Number,
         hash: String,
         owner: {
@@ -355,11 +383,46 @@ if (!global.mongoose) {
         category: String,
     });
 
+    const _VerifiedTicketLife = new Schema({
+        id: Number,
+        sold: Boolean,
+        history: [{
+            action: String,
+            block: Number,
+            owner: {
+                type: String,
+                validate: {
+                    validator: (v) => {
+                        return (Web3Utils.isAddress(v) && Web3Utils.checkAddressChecksum(v));
+                    }
+                }
+            }
+        }]
+    });
+
+    const _TicketLife = new Schema({
+        id: Number,
+        sold: Boolean,
+        history: [{
+            action: String,
+            block: Number,
+            owner: {
+                type: String,
+                validate: {
+                    validator: (v) => {
+                        return (Web3Utils.isAddress(v) && Web3Utils.checkAddressChecksum(v));
+                    }
+                }
+            }
+        }]
+    });
+
     const User = conn.model('User', _User);
     const BlockchainInfos = conn.model('BlockchainInfos', _BlockchainInfos);
 
     const EventMint = conn.model('EventMint', _EventMint);
     const EventSale = conn.model('EventSale', _EventSale);
+    const EventCloseSale = conn.model('EventCloseSale', _EventCloseSale);
     const EventBuy = conn.model('EventBuy', _EventBuy);
     const EventRegister = conn.model('EventRegister', _EventRegister);
     const EventTransfer = conn.model('EventTransfer', _EventTransfer);
@@ -368,6 +431,7 @@ if (!global.mongoose) {
 
     const EventMintVerified = conn.model('EventMintVerified', _EventMintVerified);
     const EventSaleVerified = conn.model('EventSaleVerified', _EventSaleVerified);
+    const EventCloseSaleVerified = conn.model('EventCloseSaleVerufued', _EventCloseSaleVerified);
     const EventBuyVerified = conn.model('EventBuyVerified', _EventBuyVerified);
     const EventRegisterVerified = conn.model('EventRegisterVerified', _EventRegisterVerified);
     const EventTransferVerified = conn.model('EventTransferVerified', _EventTransferVerified);
@@ -377,11 +441,15 @@ if (!global.mongoose) {
     const EventCreation = conn.model('EventCreation', _EventCreation);
     const EventListing = conn.model('EventListing', _EventListing);
 
+    const VerifiedTicketLife = conn.model('VerifiedTicketLife', _VerifiedTicketLife);
+    const TicketLife = conn.model('TicketLife', _TicketLife);
+
     global.mongoose = {};
     global.mongoose.User = User;
     global.mongoose.BlockchainInfos = BlockchainInfos;
     global.mongoose.EventMint = EventMint;
     global.mongoose.EventSale = EventSale;
+    global.mongoose.EventCloseSale = EventCloseSale;
     global.mongoose.EventBuy = EventBuy;
     global.mongoose.EventRegister = EventRegister;
     global.mongoose.EventTransfer = EventTransfer;
@@ -389,6 +457,7 @@ if (!global.mongoose) {
     global.mongoose.EventApprovalForAll = EventApprovalForAll;
     global.mongoose.EventMintVerified = EventMintVerified;
     global.mongoose.EventSaleVerified = EventSaleVerified;
+    global.mongoose.EventCloseSaleVerified = EventCloseSaleVerified;
     global.mongoose.EventBuyVerified = EventBuyVerified;
     global.mongoose.EventRegisterVerified = EventRegisterVerified;
     global.mongoose.EventTransferVerified = EventTransferVerified;
@@ -396,8 +465,10 @@ if (!global.mongoose) {
     global.mongoose.EventApprovalForAllVerified = EventApprovalForAllVerified;
     global.mongoose.EventCreation = EventCreation;
     global.mongoose.EventListing = EventListing;
+    global.mongoose.VerifiedTicketLife = VerifiedTicketLife;
+    global.mongoose.TicketLife = TicketLife;
 }
 
 module.exports = {
-    User: global.mongoose.User
+    ...global.mongoose
 };
